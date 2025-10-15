@@ -48,8 +48,16 @@ public class NewInputPlayerController : MonoBehaviour
         Vector2 direction = moveAction.ReadValue<Vector2>();
         Vector3 velocity = new Vector3(direction.x, 0, direction.y);
         velocity = -direction.x * cameraTransform.right.normalized + direction.y * cameraTransform.forward.normalized;
-        velocity.y = 0f;
-        _characterController.Move(velocity * Time.deltaTime * moveSpeed);
+        if (isGrounded)
+        {
+            velocity.y = 0;
+            if (playerVelocity.y != 0)
+            {
+                velocity.y = playerVelocity.y;
+            }
+            playerVelocity = velocity;
+        }
+        _characterController.Move(playerVelocity * Time.deltaTime * moveSpeed);
     }
 
     void Jump()
