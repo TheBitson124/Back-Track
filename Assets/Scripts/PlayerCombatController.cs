@@ -1,8 +1,10 @@
+using scripts;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-
+using UnityEngine.InputSystem;
 public class PlayerCombatController : MonoBehaviour
 {
     public float detectionRange = 3f;
@@ -11,11 +13,44 @@ public class PlayerCombatController : MonoBehaviour
     public bool showDebugGizmos = true;
     private List<BasicEnemy> detectedEnemies = new List<BasicEnemy>();
     private Collider[] detectionBuffer = new Collider[20];
-
+    private InputAction attackAction;
+    Boolean attackPressed;
+    Boolean isAttacking;
+    public float attackCooldown = 2f;
+    public int attackDamage = 5;
+    private void Start()
+    {
+        isAttacking = false;
+        attackAction=gameObject.GetComponent<NewInputPlayerController>().PlayerControls.actions.FindAction("Attack");
+        if (attackAction != null)
+        {
+            attackAction.performed += OnAttackPerformed;
+            attackAction.canceled += OnAttackCancelled;
+        }
+    }
     void Update()
     {
         detectedEnemies.Clear();
+        DetectEnemies();
+        HandleAttack();
+    }
+    void HandleAttack()
+    {
+        if (attackPressed && !isAttacking)
+        {
+            isAttacking = true;
+            Debug.Log("Attack");
 
+            //swing sword
+            for (int i = 0; i < detectedEnemies.Count; i++)
+            {
+                detectedEnemies[i].enemyStats.TakeDamage(attackDamage);
+            }
+            StartCoroutine(AttackCooldown(attackCooldown));
+        }
+    }
+    void DetectEnemies()
+    {
         Vector3 detectionCenter = transform.position + transform.forward * (detectionRange * 0.5f);
         Vector3 halfExtents = new Vector3(detectionWidth * 0.5f, detectionHeight * 0.5f, detectionRange * 0.5f);
 
@@ -35,7 +70,6 @@ public class PlayerCombatController : MonoBehaviour
                 }
             }
         }
-        print(detectedEnemies.Count);
     }
     private void OnDrawGizmos()
     {
@@ -55,5 +89,19 @@ public class PlayerCombatController : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawLine(transform.position, enemy.transform.position);
         }
+    }
+    private void OnAttackPerformed(InputAction.CallbackContext context)
+    {
+        attackPressed = true;
+    }
+    private void OnAttackCancelled(InputAction.CallbackContext context)
+    {
+        attackPressed = false;
+    }
+    IEnumerator AttackCooldown(float time)
+    {
+        yield return new WaitForSeconds(time);
+        isAttacking=false;
+
     }
 }

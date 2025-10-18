@@ -14,10 +14,10 @@ public class EnemyStats : ScriptableObject
     }
     public bool TakeDamage(int damage)
     {
-        if (hp <= damage)
+        hp -= damage;
+        if (hp < 0)
         {
-            hp -= damage;
-            return true;
+            Debug.Log("Dead");
         }
         return false;
     }

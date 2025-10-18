@@ -3,125 +3,122 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
-public class NewInputPlayerController : MonoBehaviour
+namespace scripts
 {
-    public float moveSpeed = 5f;
-    public float gravity;
-    public float jumpHeight;
-
-    private CharacterController _characterController;
-    PlayerInput PlayerControls;
-    private InputAction moveAction;
-    private InputAction jumpAction;
-    public Transform cameraTransform;
-    public Transform orientation;
-
-    private Vector3 playerVelocity;
-    private bool isGrounded;
-    private bool jumpPressed;
-
-    void Start()
+    public class NewInputPlayerController : MonoBehaviour
     {
-        PlayerControls = GetComponent<PlayerInput>();
-        moveAction = PlayerControls.actions.FindAction("Move");
-        _characterController = GetComponent<CharacterController>();
-        jumpAction = PlayerControls.actions.FindAction("Jump");
-        if (jumpAction != null)
+        public float moveSpeed = 5f;
+        public float gravity;
+        public float jumpHeight;
+
+        private CharacterController _characterController;
+        public PlayerInput PlayerControls;
+        private InputAction moveAction;
+        private InputAction jumpAction;
+        public Transform cameraTransform;
+        public Transform orientation;
+
+        private Vector3 playerVelocity;
+        private bool isGrounded;
+        private bool jumpPressed;
+
+        void Start()
         {
-            jumpAction.performed += OnJumpPerformed;
-            jumpAction.canceled += OnJumpCanceled;
-        }
-    }
-
-    void Update()
-    {
-        GroundCheck();
-        MovePlayer();
-        ApplyGravity();
-        HandleJump();
-        transform.rotation = orientation.rotation;
-    }
-
-    void MovePlayer()
-    {
-        Vector2 direction = moveAction.ReadValue<Vector2>();
-        Vector3 velocity = new Vector3(direction.x, 0, direction.y);
-        velocity = -direction.x * cameraTransform.right.normalized + direction.y * cameraTransform.forward.normalized;
-        if (isGrounded)
-        {
-            velocity.y = 0;
-            if (playerVelocity.y != 0)
+            PlayerControls = GetComponent<PlayerInput>();
+            moveAction = PlayerControls.actions.FindAction("Move");
+            _characterController = GetComponent<CharacterController>();
+            jumpAction = PlayerControls.actions.FindAction("Jump");
+            if (jumpAction != null)
             {
-                velocity.y = playerVelocity.y;
+                jumpAction.performed += OnJumpPerformed;
+                jumpAction.canceled += OnJumpCanceled;
             }
-            playerVelocity = velocity;
         }
-        _characterController.Move(playerVelocity * Time.deltaTime * moveSpeed);
-    }
 
-    void Jump()
-    {
-
-    }
-    void GroundCheck()
-    {
-        isGrounded = _characterController.isGrounded;
-        if (isGrounded && playerVelocity.y < 0)
+        void Update()
         {
-            playerVelocity.y = -2f;
+            GroundCheck();
+            MovePlayer();
+            ApplyGravity();
+            HandleJump();
+            transform.rotation = orientation.rotation;
         }
-    }
-    void HandleJump()
-    {
-        if (jumpPressed && isGrounded)
+
+        void MovePlayer()
         {
-            playerVelocity.y = Mathf.Sqrt(2f * jumpHeight * Mathf.Abs(gravity));
+            Vector2 direction = moveAction.ReadValue<Vector2>();
+            Vector3 velocity = new Vector3(direction.x, 0, direction.y);
+            velocity = -direction.x * cameraTransform.right.normalized + direction.y * cameraTransform.forward.normalized;
+            if (isGrounded)
+            {
+                velocity.y = 0;
+                if (playerVelocity.y != 0)
+                {
+                    velocity.y = playerVelocity.y;
+                }
+                playerVelocity = velocity;
+            }
+            _characterController.Move(playerVelocity * Time.deltaTime * moveSpeed);
+        }
+        void GroundCheck()
+        {
+            isGrounded = _characterController.isGrounded;
+            if (isGrounded && playerVelocity.y < 0)
+            {
+                playerVelocity.y = -2f;
+            }
+        }
+        void HandleJump()
+        {
+            if (jumpPressed && isGrounded)
+            {
+                playerVelocity.y = Mathf.Sqrt(2f * jumpHeight * Mathf.Abs(gravity));
+                jumpPressed = false;
+            }
+        }
+
+        void ApplyGravity()
+        {
+            playerVelocity.y += gravity * Time.deltaTime;
+            _characterController.Move(playerVelocity * Time.deltaTime);
+        }
+
+        private void OnJumpPerformed(InputAction.CallbackContext context)
+        {
+            jumpPressed = true;
+        }
+        private void OnJumpCanceled(InputAction.CallbackContext context)
+        {
             jumpPressed = false;
         }
-    }
 
-    void ApplyGravity()
-    {
-        playerVelocity.y += gravity * Time.deltaTime;
-        _characterController.Move(playerVelocity * Time.deltaTime);
-    }
-
-    private void OnJumpPerformed(InputAction.CallbackContext context)
-    {
-        jumpPressed = true;
-    }
-    private void OnJumpCanceled(InputAction.CallbackContext context)
-    {
-        jumpPressed = false;
-    }
-
-    void OnEnable()
-    {
-        if (jumpAction != null)
+        void OnEnable()
         {
-            jumpAction.Enable();
+            if (jumpAction != null)
+            {
+                jumpAction.Enable();
+            }
         }
-    }
-    void OnDisable()
-    {
-        if (jumpAction != null)
+        void OnDisable()
         {
-            jumpAction.Disable();
+            if (jumpAction != null)
+            {
+                jumpAction.Disable();
+            }
+            if (jumpAction != null)
+            {
+                jumpAction.performed -= OnJumpPerformed;
+                jumpAction.canceled -= OnJumpCanceled;
+            }
         }
-        if (jumpAction != null)
-        {
-            jumpAction.performed -= OnJumpPerformed;
-            jumpAction.canceled -= OnJumpCanceled;
-        }
-    }
 
-    void OnDestroy()
-    {
-        if (jumpAction != null)
+        void OnDestroy()
         {
-            jumpAction.performed -= OnJumpPerformed;
-            jumpAction.canceled -= OnJumpCanceled;
+            if (jumpAction != null)
+            {
+                jumpAction.performed -= OnJumpPerformed;
+                jumpAction.canceled -= OnJumpCanceled;
+            }
         }
     }
 }
