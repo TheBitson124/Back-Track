@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: Enemy1
   m_EditorClassIdentifier: 
   maxHp: 10
+  attackDamage: 1

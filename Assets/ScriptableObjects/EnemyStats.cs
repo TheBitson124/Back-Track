@@ -6,8 +6,8 @@ public class EnemyStats : ScriptableObject
 {
     [SerializeField]
     int maxHp;
-    
     int hp;
+    public int attackDamage;
     private void Awake()
     {
         hp = maxHp;

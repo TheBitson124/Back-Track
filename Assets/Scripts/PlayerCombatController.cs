@@ -18,6 +18,9 @@ public class PlayerCombatController : MonoBehaviour
     Boolean isAttacking;
     public float attackCooldown = 2f;
     public int attackDamage = 5;
+
+    public float hp;
+    public float max_hp;
     private void Start()
     {
         isAttacking = false;
@@ -28,16 +31,20 @@ public class PlayerCombatController : MonoBehaviour
             attackAction.canceled += OnAttackCancelled;
         }
     }
+    public void TakeDamage(float damage)
+    {
+        
+    }
     void Update()
     {
-        detectedEnemies.Clear();
-        DetectEnemies();
         HandleAttack();
     }
     void HandleAttack()
     {
         if (attackPressed && !isAttacking)
         {
+            detectedEnemies.Clear();
+            DetectEnemies();
             isAttacking = true;
             Debug.Log("Attack");
 
